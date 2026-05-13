@@ -1,13 +1,40 @@
-import { Counter } from "./Counter.jsx";
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useTracker } from 'meteor/react-meteor-data';
 import { Header } from "./Header.jsx";
-import { Info } from "./Info.jsx";
+import { LoginForm } from "./LoginForm.jsx";
+import { TeamPage } from "./TeamPage.jsx";
+import { HomePage } from "./HomePage.jsx"; // Importe a nova página
+import { SignupForm } from "./SignupForm.jsx";
 
-export const App = () => (
-  <div className="page">
-    <Header />
-    <main className="main">
-      <Counter />
-      <Info />
-    </main>
-  </div>
-);
+export const App = () => {
+  const user = useTracker(() => Meteor.user());
+
+  return (
+    <BrowserRouter>
+      <div className="page">
+        <Header />
+        <main className="main">
+          <Routes>
+            <Route path="/" element={<HomePage user={user} />} />
+            
+            <Route 
+              path="/login" 
+              element={user ? <Navigate to="/team" replace /> : <LoginForm />} 
+            />
+
+            <Route 
+              path="/signup" 
+              element={user ? <Navigate to="/team" replace /> : <SignupForm />} 
+            />
+
+            <Route 
+              path="/team" 
+              element={user ? <TeamPage /> : <Navigate to="/login" replace />} 
+            />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
+  );
+};
