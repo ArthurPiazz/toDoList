@@ -14,7 +14,6 @@ export const HomePage = ({ user }) => {
         {!user ? (
           <div>
             <p style={{ marginBottom: '1rem' }}>Você precisa entrar para acessar os recursos.</p>
-            {/* O botão redireciona para a rota /login */}
             <button className="button" onClick={() => navigate('/login')}>
               Fazer Login
             </button>
@@ -22,7 +21,6 @@ export const HomePage = ({ user }) => {
         ) : (
           <div>
             <p style={{ marginBottom: '1rem' }}>Você está autenticado!</p>
-            {/* O botão redireciona para a rota /team */}
             <button className="button" onClick={() => navigate('/team')}>
               Ir para o Dashboard da Equipe
             </button>

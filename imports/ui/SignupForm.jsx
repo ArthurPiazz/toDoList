@@ -10,10 +10,9 @@ export const SignupForm = () => {
   const submit = (e) => {
     e.preventDefault();
 
-    // Accounts.createUser cria a conta e já loga o usuário automaticamente
     Accounts.createUser({ username, password }, (err) => {
       if (err) {
-        setError(err.reason); // Exibe o erro (ex: "Usuário já existe", "Senha muito curta")
+        setError(err.reason); 
       }
     });
   };

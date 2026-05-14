@@ -12,7 +12,7 @@ export const LoginForm = () => {
 
     Meteor.loginWithPassword(username, password, (err) => {
       if (err) {
-        setError(err.reason); // Tratamento de erro básico
+        setError(err.reason);
       }
     });
   };

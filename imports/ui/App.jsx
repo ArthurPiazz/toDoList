@@ -4,8 +4,9 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { Header } from "./Header.jsx";
 import { LoginForm } from "./LoginForm.jsx";
 import { TeamPage } from "./TeamPage.jsx";
-import { HomePage } from "./HomePage.jsx"; // Importe a nova página
+import { HomePage } from "./HomePage.jsx"; 
 import { SignupForm } from "./SignupForm.jsx";
+import { TaskPage } from "./TaskPage.jsx";
 
 export const App = () => {
   const user = useTracker(() => Meteor.user());
@@ -32,6 +33,12 @@ export const App = () => {
               path="/team" 
               element={user ? <TeamPage /> : <Navigate to="/login" replace />} 
             />
+
+            <Route 
+              path="/task/:id" 
+              element={user ? <TaskPage /> : <Navigate to="/login" replace />} 
+            />
+
           </Routes>
         </main>
       </div>
