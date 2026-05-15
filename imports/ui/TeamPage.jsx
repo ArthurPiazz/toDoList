@@ -3,37 +3,41 @@ import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { TasksCollection } from '../api/tasks';
 import { useNavigate } from 'react-router-dom';
-
+import { useTracker } from 'meteor/react-meteor-data';
 import { 
   Box, Typography, TextField, Button, List, ListItem, 
   ListItemIcon, ListItemText, Paper, Divider, CircularProgress,
-  IconButton, ListItemSecondaryAction, Chip
+  IconButton, ListItemSecondaryAction, Chip, FormControlLabel,
+  Checkbox 
 } from '@mui/material';
+
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import LockIcon from '@mui/icons-material/Lock';
+import PublicIcon from '@mui/icons-material/Public';
 
 export const TeamPage = () => {
   const [taskName, setTaskName] = useState('');
   const [taskDesc, setTaskDesc] = useState('');
   const navigate = useNavigate();
-
+  const currentUserId = useTracker(() => Meteor.userId());
   const isLoading = useSubscribe('tasks');
   const tasks = useFind(() => TasksCollection.find({}, { sort: { date: -1 } }));
-
+  const [isPersonal, setIsPersonal] = useState(false);
   const handleAddTask = (e) => {
-    e.preventDefault();
-    if (!taskName.trim()) return;
+      e.preventDefault();
+      if (!taskName.trim()) return;
 
-    Meteor.call('tasks.insert', taskName, taskDesc, (err) => {
-      if (!err) {
-        setTaskName('');
-        setTaskDesc('');
-      }
-    });
-  };
-
+      Meteor.call('tasks.insert', taskName, taskDesc, isPersonal, (err) => {
+        if (!err) {
+          setTaskName('');
+          setTaskDesc('');
+          setIsPersonal(false); 
+        }
+      });
+    };
   const handleDelete = (id) => {
     if (window.confirm('Tem certeza que deseja remover esta tarefa?')) {
       Meteor.call('tasks.remove', id);
@@ -47,11 +51,22 @@ export const TeamPage = () => {
       <Typography variant="h4" gutterBottom align="center" color="primary">Tarefas da Equipe</Typography>
 
       <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
-        <form onSubmit={handleAddTask} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <TextField label="Nome da Tarefa" size="small" value={taskName} onChange={(e) => setTaskName(e.target.value)} required sx={{ flexGrow: 1 }} />
+      <form onSubmit={handleAddTask} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <TextField label="Nome" size="small" value={taskName} onChange={(e) => setTaskName(e.target.value)} required sx={{ flexGrow: 1 }} />
           <TextField label="Descrição" size="small" value={taskDesc} onChange={(e) => setTaskDesc(e.target.value)} sx={{ flexGrow: 2 }} />
+          
+          <FormControlLabel
+            control={
+              <Checkbox 
+                checked={isPersonal} 
+                onChange={(e) => setIsPersonal(e.target.checked)} 
+                color="primary"
+              />
+            }
+            label="Tarefa Pessoal"
+          />
           <Button type="submit" variant="contained" startIcon={<AddTaskIcon />}>Adicionar</Button>
-        </form>
+          </form>
       </Paper>
 
       <Paper elevation={2}>
@@ -61,17 +76,27 @@ export const TeamPage = () => {
               <ListItem>
                 <ListItemIcon><AssignmentIcon color="primary" /></ListItemIcon>
                 <ListItemText
-                  primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {task.name}
-                      <Chip label={task.status} size="small" color={task.status === 'Concluída' ? 'success' : task.status === 'Em Andamento' ? 'warning' : 'default'} />
-                    </Box>
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {task.isPersonal && <LockIcon fontSize="small" color="disabled" />}
+                        {task.name}
+                        <Chip label={task.status} size="small" />
+                      </Box>
                   }
                   secondary={`Criado por: ${task.creator} em ${new Date(task.date).toLocaleDateString()}`}
                 />
                 <ListItemSecondaryAction>
-                  <IconButton edge="end" onClick={() => navigate(`/task/${task._id}`)} color="primary"><EditIcon /></IconButton>
-                  <IconButton edge="end" onClick={() => handleDelete(task._id)} color="error"><DeleteIcon /></IconButton>
+
+                  {task.owner === currentUserId && (
+                    <>
+                      <IconButton edge="end" onClick={() => navigate(`/task/${task._id}`)} color="primary">
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton edge="end" onClick={() => handleDelete(task._id)} color="error">
+                        <DeleteIcon />
+                      </IconButton>
+                    </>
+                  )}
                 </ListItemSecondaryAction>
               </ListItem>
               {index < tasks.length - 1 && <Divider component="li" />}

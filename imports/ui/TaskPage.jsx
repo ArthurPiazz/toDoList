@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate} from 'react-router-dom';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { TasksCollection } from '../api/tasks';
-
+import { useTracker } from 'meteor/react-meteor-data';
 import { 
   Box, Typography, TextField, Button, Paper, CircularProgress, 
   Stack, Divider, IconButton, Chip 
@@ -19,9 +19,9 @@ export const TaskPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isLoading = useSubscribe('tasks');
-  
+  const currentUserId = useTracker(() => Meteor.userId());
   const task = useFind(() => TasksCollection.find({ _id: id }))[0];
-
+  const isOwner = task?.owner === currentUserId;
   const [isEditing, setIsEditing] = useState(false);
   
   const [editName, setEditName] = useState('');
@@ -57,11 +57,16 @@ export const TaskPage = () => {
           // ================= modo de vis =================
           <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h5" color="primary" fontWeight="bold">{task.name}</Typography>
-              <Chip 
-                label={task.status} 
-                color={task.status === 'Concluída' ? 'success' : task.status === 'Em Andamento' ? 'warning' : 'default'} 
-              />
+              <Typography variant="h5" color="primary" fontWeight="bold">
+                {task.name}
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                {task.isPersonal && <Chip label="Pessoal" variant="outlined" size="small" icon={<LockIcon />} />}
+                <Chip 
+                  label={task.status} 
+                  color={task.status === 'Concluída' ? 'success' : task.status === 'Em Andamento' ? 'warning' : 'default'} 
+                />
+              </Stack>
             </Box>
             
             <Typography variant="body1" sx={{ mb: 2 }}>{task.description || "Sem descrição."}</Typography>
@@ -75,31 +80,30 @@ export const TaskPage = () => {
             <Typography variant="subtitle2" gutterBottom>Mudar Situação:</Typography>
             <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
               <Button 
-                size="small" variant="outlined" color="warning" startIcon={<PlayArrowIcon />}
-                disabled={task.status !== 'Cadastrada'} 
+                disabled={!isOwner || task.status !== 'Cadastrada'} 
                 onClick={() => handleChangeStatus('Em Andamento')}
               >
                 Iniciar
-              </Button>
+              </Button> 
               <Button 
-                size="small" variant="outlined" color="success" startIcon={<CheckIcon />}
-                disabled={task.status !== 'Em Andamento'}
+                disabled={!isOwner || task.status !== 'Em Andamento'} 
                 onClick={() => handleChangeStatus('Concluída')}
               >
                 Concluir
               </Button>
               <Button 
-                size="small" variant="outlined" color="info" startIcon={<ReplayIcon />}
-                disabled={task.status === 'Cadastrada'}
+                disabled={!isOwner || task.status === 'Cadastrada'} 
                 onClick={() => handleChangeStatus('Cadastrada')}
               >
                 Reiniciar
               </Button>
             </Stack>
 
-            <Button variant="contained" startIcon={<EditIcon />} onClick={handleStartEditing} fullWidth>
-              Editar Informações
-            </Button>
+            {isOwner && (
+              <Button variant="contained" startIcon={<EditIcon />} onClick={handleStartEditing} fullWidth>
+                Editar Informações
+              </Button>
+            )}
           </>
         ) : (
           // ================= modo de edit =================
