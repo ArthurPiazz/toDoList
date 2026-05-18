@@ -7,6 +7,8 @@ import { TeamPage } from "./TeamPage.jsx";
 import { HomePage } from "./HomePage.jsx"; 
 import { SignupForm } from "./SignupForm.jsx";
 import { TaskPage } from "./TaskPage.jsx";
+import { ProfilePage } from "./ProfilePage.jsx";
+
 
 export const App = () => {
   const user = useTracker(() => Meteor.user());
@@ -38,7 +40,10 @@ export const App = () => {
               path="/task/:id" 
               element={user ? <TaskPage /> : <Navigate to="/login" replace />} 
             />
-
+            <Route 
+              path="/profile" 
+              element={user ? <ProfilePage /> : <Navigate to="/login" replace />} 
+            />
           </Routes>
         </main>
       </div>

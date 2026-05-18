@@ -2,9 +2,11 @@ import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import MeteorLogo from "./meteor-logo.svg";
+import { useNavigate } from 'react-router-dom';
+
 
 export const Header = () => {
-
+  const navigate = useNavigate();
   const user = useTracker(() => Meteor.user());
 
   const logout = () => {
@@ -15,12 +17,21 @@ export const Header = () => {
     <div className="header">
       <nav className="nav container">
         <div className="logo-container">
-          <MeteorLogo className="logo" />
+          <MeteorLogo className="logo" onClick={() => navigate('/')}/>
         </div>
         
         <h1 className="page-title">Welcome to Meteor!</h1>
 
         {user && (
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+
+            <button 
+              className="button" 
+              onClick={() => navigate('/profile')}
+              style={{ backgroundColor: '#62807e' }}
+            >
+              Meu Perfil
+            </button>
           <button 
             className="button" 
             onClick={logout}
@@ -28,6 +39,7 @@ export const Header = () => {
           >
             Sair
           </button>
+          </div>
         )}
       </nav>
     </div>

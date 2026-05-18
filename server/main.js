@@ -63,5 +63,21 @@ Meteor.methods({
     }
 
     await TasksCollection.updateAsync(taskId, { $set: { status } });
+  },
+  async 'users.updateProfile'(profileData) {
+    if (!this.userId) throw new Meteor.Error('Não autorizado');
+
+    await Meteor.users.updateAsync(this.userId, {
+      $set: {
+        profile: {
+          name: profileData.name,
+          email: profileData.email,
+          birthDate: profileData.birthDate,
+          gender: profileData.gender,
+          company: profileData.company,
+          photo: profileData.photo 
+        }
+      }
+    });
   }
 });
