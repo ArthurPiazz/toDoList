@@ -21,11 +21,15 @@ import PublicIcon from '@mui/icons-material/Public';
 export const TeamPage = () => {
   const [taskName, setTaskName] = useState('');
   const [taskDesc, setTaskDesc] = useState('');
+  const [isPersonal, setIsPersonal] = useState(false);
+  
+  const [showCompleted, setShowCompleted] = useState(false);
+  
   const navigate = useNavigate();
   const currentUserId = useTracker(() => Meteor.userId());
-  const isLoading = useSubscribe('tasks');
+  const isLoading = useSubscribe('tasks', showCompleted);
   const tasks = useFind(() => TasksCollection.find({}, { sort: { date: -1 } }));
-  const [isPersonal, setIsPersonal] = useState(false);
+  
   const handleAddTask = (e) => {
       e.preventDefault();
       if (!taskName.trim()) return;
@@ -38,6 +42,7 @@ export const TeamPage = () => {
         }
       });
     };
+    
   const handleDelete = (id) => {
     if (window.confirm('Tem certeza que deseja remover esta tarefa?')) {
       Meteor.call('tasks.remove', id);
@@ -51,7 +56,7 @@ export const TeamPage = () => {
       <Typography variant="h4" gutterBottom align="center" color="primary">Tarefas da Equipe</Typography>
 
       <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
-      <form onSubmit={handleAddTask} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <form onSubmit={handleAddTask} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <TextField label="Nome" size="small" value={taskName} onChange={(e) => setTaskName(e.target.value)} required sx={{ flexGrow: 1 }} />
           <TextField label="Descrição" size="small" value={taskDesc} onChange={(e) => setTaskDesc(e.target.value)} sx={{ flexGrow: 2 }} />
           
@@ -66,8 +71,21 @@ export const TeamPage = () => {
             label="Tarefa Pessoal"
           />
           <Button type="submit" variant="contained" startIcon={<AddTaskIcon />}>Adicionar</Button>
-          </form>
+        </form>
       </Paper>
+
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <FormControlLabel
+          control={
+            <Checkbox 
+              checked={showCompleted} 
+              onChange={(e) => setShowCompleted(e.target.checked)} 
+              color="primary"
+            />
+          }
+          label="Exibir tarefas concluídas"
+        />
+      </Box>
 
       <Paper elevation={2}>
         <List>
